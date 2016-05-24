@@ -33,6 +33,7 @@ public:
 	void Hunt();
 	void Heal();
 	void Shop();
+	void Item();
 	void Vs();
 	void Gym();
 	void Exit();
