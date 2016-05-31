@@ -1,10 +1,10 @@
 /************************************************************************************
 ** Program Filename: emulator.cpp
 ** Author: Dong Hoon Yeo
-** Date: 2014/05/20
+** Date: 2016/05/22
 ** Description: main pokemon stream
 ** Required files:
-**			SurvivalGame.cpp
+**			
 **		
 ************************************************************************************/
 #include <iostream>
@@ -23,6 +23,8 @@
 
 #define MODLUS 2147483647
 #define MULT	630360016
+#define MULT1       24112
+#define MULT2       26143
 
 using namespace std;
 int read_input_start();
@@ -36,6 +38,8 @@ Skill NowSkill;
 static long ran = 150493284;
 char Name[20][20] = {{"Leesangheassi"},{"Pairi"},{"Ggobuugi"},{"Picachu"},{"Digda"},{"Naoong"},{"Gadi"},{"Gorapaduck"},
 {"Altongmon"},{"Woochuidong"},{"Coill"},{"Arkustar"},{"Ponita"},{"Ddubuckcho"},{"Jjirrirrigong"},{"Ggoret"},{"Jammanbo"},{"Minyong"},{"Myu"},{"Hambang"}};
+char VsName[12][20] = {{"DongHyun"},{"MinWoo"},{"WanHyeok"},{"SangHyun"},{"JaeHyun"},{"TaeHo"},{"JinSu"},{"DongHyeok"},{"GeonHo"},{"JaeYeol"},{"YoungDae"},{"DongHoon"}};
+char GymName[9][20] = {{"Hambang_Sugar"},{"Hambang_AI"},{"Hambang_BlackJack"},{"Hambang_Factory"},{"Hambang_Simulation"},{"Hambang_3000"},{"Hambang_Pintos"},{"Hambang_Linux"},{"JINKYU_prof"}};
 int Hp[20] = {80,80,80,65,70,65,70,70,80,75,65,65,75,70,65,65,85,80,80,150};
 int Attribute[20] = {2,3,4,1,0,0,3,4,0,2,1,4,3,2,1,0,0,0,5,5};
 int Attk[20] = {22,26,19,19,21,20,21,14,28,19,15,16,21,20,18,22,30,32,40,50};
@@ -44,7 +48,7 @@ int Speed[20] = {18,25,16,28,21,25,26,20,21,16,26,25,26,20,25,24,12,21,30,50};
 int SpecialAttk[20] = {29,23,22,30,22,23,25,21,13,26,30,21,24,23,25,10,10,30,35,50};
 int SpecialDef[20] = {18,20,26,16,22,18,20,29,19,20,18,21,21,26,24,18,28,25,30,50};
 char Skills[20][20] = {{"NormalPunch"},{"ElectricPunch"},{"GrassPunch"}, {"FirePunch"},{"WaterPunch"},{"QuickPunch"},{"Slam"},{"Thunder"},{"SolarBeam"},{"FireBlast"},{"WaterPump"},{"SpeedStar"},{"Fighting"},{"Harden"},{"Stress"},{"Fever"},{"Drain"},{"SelfBoom"},{"Homework"},{"ServerBoom"}};
-int SkillPercent[20] = {30,30,30,30,30,20,100,100,100,100,100,80,30,30,30,30,10,100,300,300};
+int SkillPercent[20] = {30,30,30,30,30,20,100,100,100,100,100,80,30,30,30,30,10,150,300,300};
 int SkillType[20] = {0,1,2,3,4,6,0,1,2,3,4,6,7,7,8,8,5,0,5,5};
 
 int main(){
@@ -168,6 +172,7 @@ void Emulator::LoadFile(){
 		fscanf(rfp, "%d", &PoketMonster.aSpecialDef);
 		fscanf(rfp, "%d", &PoketMonster.aSkillCnt);
 		strcpy(PoketMonster.aName, Name[PoketMonster.aPoketmonNum-1]);
+		PoketMonster.aSkills.erase(PoketMonster.aSkills.begin(), PoketMonster.aSkills.end());
 		for(j = 0; j < PoketMonster.aSkillCnt; j++){
 			fscanf(rfp, "%d", &skill);
 			fscanf(rfp, "%d", &NowSkill.aCnt);
@@ -190,86 +195,98 @@ void Emulator::LoadFile(){
 }
 
 void Emulator::InGame(){
-	int a = 0, b = 0;
-		
-	system("clear");
-	for(int i = 0; i < aCharactor.aPokemonCnt; i++){
-		if(aCharactor.aNowPokemons[i].aHp)
-			a++;
-		aCharactor.aNowPokemons[i].Init();
+	int a = 0, b = 0, i, j, k;
+	while(1){
+		system("clear");
+		k = 0;
+		a = 0;
+		for(i = 1; i <= 20; i++){
+			for(j = 0; j < aCharactor.aPokemonCnt; j++){
+				if(aCharactor.aNowPokemons[j].aPoketmonNum == i)
+					k++;
+			}
+		}
+		if(k == 20){
+			cout << "you catch all poketmonster!!    Congraturations!!!!!" << endl;
+			break;
+		}
+		for(i = 0; i < aCharactor.aPokemonCnt; i++){
+			if(aCharactor.aNowPokemons[i].aHp > 0)
+				a++;
+			aCharactor.aNowPokemons[i].Init();
+		}
+		if(a == 0){
+			cout << "you lose half of your money!!" << endl;
+			aCharactor.aMoney = aCharactor.aMoney / 2;
+			b = 1;
+			cout << "you should go to heal first!" << endl;
+		}	
+		a = 0;
+		cout << "********************************************************************" << endl;
+		cout << "*                                                                  *" << endl;
+		cout << "*  1. Hunt                        2. Heal                          *" << endl;
+		cout << "*  3. Vs                          4. Shop                          *" << endl;
+		cout << "*  5. Gym                         6. Item                          *" << endl;
+		cout << "*  7. Information                 8. Save                          *" << endl;
+		cout << "*  9. Exit                                                         *" << endl;
+		cout << "*                                                                  *" << endl;
+		cout << "********************************************************************" << endl;
+		cout << "input : ";
+		while(a == 0)
+			a = read_input_game();
+		switch(a){
+			case 1:{
+				if(b == 0)
+			   	 	Hunt();
+			    break;
+			}
+
+			case 2:{
+			    Heal();
+				b = 0;
+			    break;
+			}
+
+			case 3:{
+				if(b == 0)
+			  	  Vs();
+			    break;
+			}
+
+			case 4:{
+			    Shop();
+			    break;
+			}
+
+			case 5:{
+				if(b == 0)
+			 	   Gym();
+			    break;
+			}
+
+			case 6:{
+			    Item();
+			    break;
+			}
+	
+			case 7:{
+			    Information();
+			    break;
+			}
+
+			case 8:{
+			    SaveFile();
+			    break;
+			}
+
+			case 9:{
+			    Exit();
+			    break;
+			}
+	  	}
+		if(a == 9)
+			break;
 	}
-	if(a == 0){
-		cout << "you lose half of your money!!" << endl;
-		aCharactor.aMoney = aCharactor.aMoney / 2;
-		b = 1;
-		cout << "you should go to heal first!" << endl;
-	}	
-	a = 0;
-	cout << "********************************************************************" << endl;
-	cout << "*                                                                  *" << endl;
-	cout << "*  1. Hunt                        2. Heal                          *" << endl;
-	cout << "*  3. Vs                          4. Shop                          *" << endl;
-	cout << "*  5. Gym                         6. Item                          *" << endl;
-	cout << "*  7. Information                 8. Save                          *" << endl;
-	cout << "*  9. Exit                                                         *" << endl;
-	cout << "*                                                                  *" << endl;
-	cout << "********************************************************************" << endl;
-	cout << "input : ";
-	while(a == 0)
-		a = read_input_game();
-	switch(a){
-		case 1:{
-			if(b == 0)
-		    	Hunt();
-		    break;
-		}
-
-		case 2:{
-		    Heal();
-			b = 0;
-		    break;
-		}
-
-		case 3:{
-			if(b == 0)
-		  	  Vs();
-		    break;
-		}
-
-		case 4:{
-		    Shop();
-		    break;
-		}
-
-		case 5:{
-			if(b == 0)
-		 	   Gym();
-		    break;
-		}
-
-		case 6:{
-		    //Item();
-			InGame();
-		    break;
-		}
-	
-		case 7:{
-		    Information();
-		    break;
-		}
-
-		case 8:{
-		    SaveFile();
-		    break;
-		}
-
-		case 9:{
-		    Exit();
-		    break;
-		}
-  	}
-
-	
 }
 
 void Emulator::Information(){
@@ -310,7 +327,7 @@ void Emulator::Information(){
 	}
 	cout << "\ninput any key to return the menu!" << endl;
 	cin >> a;	
-	InGame();
+	//InGame();
 }
 
 void Emulator::SaveFile(){
@@ -348,19 +365,22 @@ void Emulator::SaveFile(){
 	fclose(wfp);
 	cout << "\ninput any key to return the menu!" << endl;
 	cin >> a;
-	InGame();
+	//InGame();
 }
 
 void Emulator::Hunt(){
 	int level, huntpokenum, input = 0, input2 = 0, i = 0, j = 0, trash;
 	
 	level = random(1,4) + aCharactor.aBadges * 5;
-	huntpokenum = random(1, (aCharactor.aBadges + 1) * 2 + 1);
+	huntpokenum = random(1, (aCharactor.aBadges + 1) * 2 + 2);
 	init_pokemon(huntpokenum, level);
 	strcpy(PoketMonster.aName, Name[huntpokenum-1]);
 	
 	while(PoketMonster.aHp > 0){
 		system("clear");
+		if(aCharactor.aNowPokemons[i].aHp == 0){
+			i++;
+		}
 		cout << "********************************************************************" << endl;
 		cout << "                        " << Name[huntpokenum-1] << "   level : " << level << "    Hp : " << PoketMonster.aHp << endl; 
 		cout << "\n\n" << aCharactor.aNowPokemons[i].aName << "   level : " << aCharactor.aNowPokemons[i].aLevel;
@@ -370,7 +390,7 @@ void Emulator::Hunt(){
 		cout << "********************************************************************" << endl;
 		cin >> input;
 
-		if(input == 1){
+		if(input == 1){		// skill
 			cout << "skill list" << endl;
 			for(j = 0; j < aCharactor.aNowPokemons[i].aSkills.size(); j++){
 				cout << j+1 << ". " << Skills[aCharactor.aNowPokemons[i].aSkills[j].aNumber] << "\tcnt : ";
@@ -387,7 +407,7 @@ void Emulator::Hunt(){
 			if(PoketMonster.aHp <= 0){
 				cout << "You Win!!" << endl;
 				aCharactor.aNowPokemons[i].aExp += level;
-				trash = random(1, PoketMonster.aLevel)*100;
+				trash = PoketMonster.aLevel*50;
 				aCharactor.GetMoney(trash);
 				cout << "Earn " << trash << endl;
 				if(aCharactor.aNowPokemons[i].aExp > (aCharactor.aNowPokemons[i].aLevel*2)){
@@ -397,10 +417,36 @@ void Emulator::Hunt(){
 				break;
 			}
 			else if(aCharactor.aNowPokemons[i].aHp <= 0){
-				i++;
-				if(i >= aCharactor.aNowPokemons.size()){
-					cout << "You haven't more pokemon. You lose!!" << endl;
+				cout << "your " << aCharactor.aNowPokemons[i].aName << " is dead" << endl;
+				cout << "push any button" << endl;
+				cin >> trash;
+				int a = 0;
+				for(j = 0; j < aCharactor.aPokemonCnt; j++){
+					if(aCharactor.aNowPokemons[j].aHp > 0)
+						a++;
+				}
+				if(a == 0){
+					cout << "your pokemons are all dead!!" << endl;
 					break;
+				}				
+				else {
+					cout << "Poketmon list" << endl;
+					input2 = 0;
+					while(input2 == 0){
+						for(j = 0; j < aCharactor.aNowPokemons.size(); j++){
+							cout << j+1 << ". " << aCharactor.aNowPokemons[j].aName << "\tLevel : ";
+							cout << aCharactor.aNowPokemons[j].aLevel << "\tHp : ";
+							cout << aCharactor.aNowPokemons[j].aHp << endl;
+						}
+						cin >> input2;
+						if(input2 <= aCharactor.aNowPokemons.size()){
+							if(aCharactor.aNowPokemons[input2-1].aHp > 0)
+								i = input2-1;
+							else 
+								input2 = 0;
+						}
+						else	input2 = 0;
+					}
 				}
 			}
 			else{
@@ -417,7 +463,7 @@ void Emulator::Hunt(){
 			if(PoketMonster.aHp <= 0){
 				cout << "You Win!!" << endl;
 				aCharactor.aNowPokemons[i].aExp += level;
-				trash = random(1, PoketMonster.aLevel)*100;
+				trash = PoketMonster.aLevel*50;
 				aCharactor.GetMoney(trash);
 				cout << "Earn " << trash << endl;
 				if(aCharactor.aNowPokemons[i].aExp > (aCharactor.aNowPokemons[i].aLevel*2)){
@@ -427,10 +473,36 @@ void Emulator::Hunt(){
 				break;
 			}
 			else if(aCharactor.aNowPokemons[i].aHp <= 0){
-				i++;
-				if(i >= aCharactor.aNowPokemons.size()){
-					cout << "You haven't more pokemon. You lose!!" << endl;
+				cout << "your " << aCharactor.aNowPokemons[i].aName << " is dead" << endl;
+				cout << "push any button" << endl;
+				cin >> trash;
+				int a = 0;
+				for(j = 0; j < aCharactor.aPokemonCnt; j++){
+					if(aCharactor.aNowPokemons[j].aHp > 0)
+						a++;
+				}
+				if(a == 0){
+					cout << "your pokemons are all dead!!" << endl;
 					break;
+				}				
+				else {
+					cout << "Poketmon list" << endl;
+					input2 = 0;
+					while(input2 == 0){
+						for(j = 0; j < aCharactor.aNowPokemons.size(); j++){
+							cout << j+1 << ". " << aCharactor.aNowPokemons[j].aName << "\tLevel : ";
+							cout << aCharactor.aNowPokemons[j].aLevel << "\tHp : ";
+							cout << aCharactor.aNowPokemons[j].aHp << endl;
+						}
+						cin >> input2;
+						if(input2 <= aCharactor.aNowPokemons.size()){
+							if(aCharactor.aNowPokemons[input2-1].aHp > 0)
+								i = input2-1;
+							else 
+								input2 = 0;
+						}
+						else	input2 = 0;
+					}
 				}
 			}
 			else{
@@ -438,7 +510,7 @@ void Emulator::Hunt(){
 				cin >> trash;
 			}
 		}	
-		else if(input == 2){
+		else if(input == 2){			// item
 			system("clear");
 			cout << "********************************************************************" << endl;
 			cout << "   1. PoketBall("<< aCharactor.aItem.aCnt[0] << ")" << endl;
@@ -474,22 +546,22 @@ void Emulator::Hunt(){
 							break;
 						}
 						case 3:{
-							aCharactor.aNowPokemons[i].HpUp(200);
+							aCharactor.aNowPokemons[i].HpUp(300);
 							cout << aCharactor.aNowPokemons[i].aName << " charge 300 Hps!!" << endl; 
 							cout << "push any button" << endl;
 							cin >> trash;
 							break;
 						}
 						case 4:{
-							aCharactor.aNowPokemons[i].HpUp(400);
-							cout << aCharactor.aNowPokemons[i].aName << " charge 300 Hps!!" << endl; 
+							aCharactor.aNowPokemons[i].HpUp(600);
+							cout << aCharactor.aNowPokemons[i].aName << " charge 600 Hps!!" << endl; 
 							cout << "push any button" << endl;
 							cin >> trash;
 							break;
 						}
 						case 5:{
-							aCharactor.aNowPokemons[i].HpUp(900);
-							cout << aCharactor.aNowPokemons[i].aName << " charge 300 Hps!!" << endl; 
+							aCharactor.aNowPokemons[i].HpUp(1300);
+							cout << aCharactor.aNowPokemons[i].aName << " charge 1300 Hps!!" << endl; 
 							cout << "push any button" << endl;
 							cin >> trash;
 							break;
@@ -502,8 +574,18 @@ void Emulator::Hunt(){
 				input = 0;
 			}
 		}
-		else if(input == 3)
-			cout << "change" << endl;
+		else if(input == 3){	// poketmon change
+			cout << "Poketmon list" << endl;
+			for(j = 0; j < aCharactor.aNowPokemons.size(); j++){
+				cout << j+1 << ". " << aCharactor.aNowPokemons[j].aName << "\tLevel : ";
+				cout << aCharactor.aNowPokemons[j].aLevel << "\tHp : ";
+				cout << aCharactor.aNowPokemons[j].aHp << endl;
+			}////////////////////////////////////////////////////////////////////////
+			cin >> input2;
+			if(input2 <= aCharactor.aNowPokemons.size()){
+				i = input2-1;
+			}
+		}
 		else if(input == 4)
 			break;
 	}
@@ -513,7 +595,7 @@ void Emulator::Hunt(){
 		cin >> input;
 	}
 		
-	InGame();
+	//InGame();
 }
 
 void Emulator::Heal(){
@@ -532,7 +614,7 @@ void Emulator::Heal(){
 
 	cout << "\ninput any key to return the menu!" << endl;
 	cin >> a;
-	InGame();
+	//InGame();
 }
 
 void Emulator::Shop(){
@@ -593,21 +675,609 @@ void Emulator::Shop(){
 
 	cout << "\ninput any key to return the menu!" << endl;
 	cin >> a;
-	InGame();
+	//InGame();
+}
+
+void Emulator::Item(){
+	char a;
+	int input = 0, input2 = 0, i = 0, trash;
+	while(input == 0){
+		system("clear");
+		cout << "********************************************************************" << endl;
+		cout << "   1. PoketBall("<< aCharactor.aItem.aCnt[0] << ")" << endl;
+		cout << "   2. LevelCandy("<< aCharactor.aItem.aCnt[1] << ")" << endl;
+		cout << "   3. PotionLow("<< aCharactor.aItem.aCnt[2] << ")" << endl;
+		cout << "   4. PotionMid("<< aCharactor.aItem.aCnt[3] << ")" << endl;
+		cout << "   5. PotionHigh("<< aCharactor.aItem.aCnt[4] << ")" << endl;
+		cout << "   6. Exit" << endl;
+		cout << "********************************************************************" << endl;
+		cin >> input;
+		if((input < 6) && (input > 1)){
+			if(aCharactor.aItem.aCnt[input-1] > 0){
+				aCharactor.UsingItem(input-1);
+				switch(input){
+					case 2:{
+						system("clear");
+						cout << "Use Level candy!!" << endl;
+						for(i = 0; i < aCharactor.aNowPokemons.size(); i++){
+							cout << i+1 << ". " << aCharactor.aNowPokemons[i].aName << "\tLevel : " << aCharactor.aNowPokemons[i].aLevel << endl;
+						}
+						cout << "Which poketmon??" << endl;
+						cin >> input2;
+						i = input2 - 1;
+						if(i < aCharactor.aNowPokemons.size()){
+							aCharactor.aNowPokemons[i].LevelCandyUp();
+							cout << aCharactor.aNowPokemons[i].aName << " level up!!" << endl;
+							cout << "push any button" << endl;
+							cin >> trash;
+						}
+						else 
+							aCharactor.aItem.aCnt[input-1]++;
+						input = 0;
+						break;
+					}
+					case 3:{
+						system("clear");
+						cout << "Use PotionLow!!" << endl;
+						for(i = 0; i < aCharactor.aNowPokemons.size(); i++){
+							cout << i+1 << ". " << aCharactor.aNowPokemons[i].aName << "\tLevel : " << aCharactor.aNowPokemons[i].aLevel << endl;
+						}
+						cout << "Which poketmon??" << endl;
+						cin >> input2;
+						i = input2 - 1;
+						if(i < aCharactor.aNowPokemons.size()){
+							aCharactor.aNowPokemons[i].HpUp(300);
+							cout << aCharactor.aNowPokemons[i].aName << " charge 300 Hps!!" << endl; 
+							cout << "push any button" << endl;
+							cin >> trash;
+						}
+						else 
+							aCharactor.aItem.aCnt[input-1]++;
+						input = 0;
+						break;
+					}
+					case 4:{
+						system("clear");
+						cout << "Use PotionMid!!" << endl;
+						for(i = 0; i < aCharactor.aNowPokemons.size(); i++){
+							cout << i+1 << ". " << aCharactor.aNowPokemons[i].aName << "\tLevel : " << aCharactor.aNowPokemons[i].aLevel << endl;
+						}
+						cout << "Which poketmon??" << endl;
+						cin >> input2;
+						i = input2 - 1;
+						if(i < aCharactor.aNowPokemons.size()){
+							aCharactor.aNowPokemons[i].HpUp(600);
+							cout << aCharactor.aNowPokemons[i].aName << " charge 600 Hps!!" << endl; 
+							cout << "push any button" << endl;
+							cin >> trash;
+						}
+						else 
+							aCharactor.aItem.aCnt[input-1]++;
+						input = 0;
+						break;
+					}
+					case 5:{
+						system("clear");
+						cout << "Use PotionHigh!!" << endl;
+						for(i = 0; i < aCharactor.aNowPokemons.size(); i++){
+							cout << i+1 << ". " << aCharactor.aNowPokemons[i].aName << "\tLevel : " << aCharactor.aNowPokemons[i].aLevel << endl;
+						}
+						cout << "Which poketmon??" << endl;
+						cin >> input2;
+						i = input2 - 1;
+						if(i < aCharactor.aNowPokemons.size()){
+							aCharactor.aNowPokemons[i].HpUp(1300);
+							cout << aCharactor.aNowPokemons[i].aName << " charge 1300 Hps!!" << endl; 
+							cout << "push any button" << endl;
+							cin >> trash;
+						}
+						else 
+							aCharactor.aItem.aCnt[input-1]++;
+						input = 0;
+						break;
+					}				
+				}
+			}
+			else{
+				cout << "Lack of this item!!" << endl;
+				input = 0;
+			}
+		}
+		else if(input == 1){
+			cout << "You can't use this Item now!!" << endl;
+			input = 0;
+		}
+	}
+	cout << "\ninput any key to return the menu!" << endl;
+	cin >> a;
+	//InGame();
 }
 
 void Emulator::Vs(){
+	int cnt, level, huntpokenum, input = 0, input2 = 0, i = 0, j = 0, trash ,a;
+	cnt = 0;
 	system("clear");
-	cout << "go to vs!!!!!!!!!!!!!!!!!!!!!!" << endl;
+	cout << "********************************************************************" << endl;
+	cout << " Trainer Name : " << VsName[random(0, 12)] << "\t\tPokemon_cnt : " << (aCharactor.aBadges / 2) + 1 << endl;
+	cout << "********************************************************************" << endl;
+	cout << "push any button" << endl;
+	cin >> trash;
+	while(cnt++ < (aCharactor.aBadges / 2) + 1){
+		
+		level = random(1,4) + (aCharactor.aBadges + 1) * 5;
+		huntpokenum = random(1, (aCharactor.aBadges + 1) * 2 + 2);
+		init_pokemon(huntpokenum, level);
+		strcpy(PoketMonster.aName, Name[huntpokenum-1]);
+	
+		while(PoketMonster.aHp > 0){
+			system("clear");
+			cout << "********************************************************************" << endl;
+			cout << "                        " << Name[huntpokenum-1] << "   level : " << level << "    Hp : " << PoketMonster.aHp << endl; 
+			cout << "\n\n" << aCharactor.aNowPokemons[i].aName << "   level : " << aCharactor.aNowPokemons[i].aLevel;
+			cout << "    Hp : " << aCharactor.aNowPokemons[i].aHp << endl;
+			cout << "********************************************************************" << endl;
+			cout << " 1. skills	  2. item	3. change" << endl;
+			cout << "********************************************************************" << endl;
+			cin >> input;
 
-	InGame();
+			if(input == 1){		// skill
+				cout << "skill list" << endl;
+				for(j = 0; j < aCharactor.aNowPokemons[i].aSkills.size(); j++){
+					cout << j+1 << ". " << Skills[aCharactor.aNowPokemons[i].aSkills[j].aNumber] << "\tcnt : ";
+					cout << aCharactor.aNowPokemons[i].aSkills[j].aCnt << endl;
+				}
+				cin >> input2;
+				system("clear");
+				fighting(i, input2, 0);
+				cout << "********************************************************************" << endl;
+				cout << "                        " << Name[huntpokenum-1] << "   level : " << level << "    Hp : " << PoketMonster.aHp << endl; 
+				cout << "\n\n" << aCharactor.aNowPokemons[i].aName << "   level : " << aCharactor.aNowPokemons[i].aLevel;
+				cout << "    Hp : " << aCharactor.aNowPokemons[i].aHp << endl;
+				cout << "********************************************************************" << endl;
+				if(PoketMonster.aHp <= 0){
+					cout << "You Win!!" << endl;
+					aCharactor.aNowPokemons[i].aExp += level;
+					
+					if(aCharactor.aNowPokemons[i].aExp > (aCharactor.aNowPokemons[i].aLevel*2)){
+						aCharactor.aNowPokemons[i].LevelUp();
+						cout << aCharactor.aNowPokemons[i].aName << "'s level up!!" << endl;
+					}
+					break;
+				}
+				else if(aCharactor.aNowPokemons[i].aHp <= 0){
+					cout << "your " << aCharactor.aNowPokemons[i].aName << " is dead" << endl;
+					cout << "push any button" << endl;
+					cin >> trash;
+					a = 0;
+					for(j = 0; j < aCharactor.aPokemonCnt; j++){
+						if(aCharactor.aNowPokemons[j].aHp > 0)
+							a++;
+					}
+					if(a == 0){
+						cout << "your pokemons are all dead!!" << endl;
+						break;
+					}				
+					else {
+						cout << "Poketmon list" << endl;
+						input2 = 0;
+						while(input2 == 0){
+							for(j = 0; j < aCharactor.aNowPokemons.size(); j++){
+								cout << j+1 << ". " << aCharactor.aNowPokemons[j].aName << "\tLevel : ";
+								cout << aCharactor.aNowPokemons[j].aLevel << "\tHp : ";
+								cout << aCharactor.aNowPokemons[j].aHp << endl;
+							}
+							cin >> input2;
+							if(input2 <= aCharactor.aNowPokemons.size()){
+								if(aCharactor.aNowPokemons[input2-1].aHp > 0)
+									i = input2-1;
+								else 
+									input2 = 0;
+							}
+							else	input2 = 0;
+						}
+					}
+				}
+				else{
+					cout << "push any button" << endl;
+					cin >> trash;
+				}
+				system("clear");
+				fighting(i, input2, 1);
+				cout << "********************************************************************" << endl;
+				cout << "                        " << Name[huntpokenum-1] << "   level : " << level << "    Hp : " << PoketMonster.aHp << endl; 
+				cout << "\n\n" << aCharactor.aNowPokemons[i].aName << "   level : " << aCharactor.aNowPokemons[i].aLevel;
+				cout << "    Hp : " << aCharactor.aNowPokemons[i].aHp << endl;
+				cout << "********************************************************************" << endl;
+				if(PoketMonster.aHp <= 0){
+					cout << "You Win!!" << endl;
+					aCharactor.aNowPokemons[i].aExp += level;
+					
+					if(aCharactor.aNowPokemons[i].aExp > (aCharactor.aNowPokemons[i].aLevel*2)){
+						aCharactor.aNowPokemons[i].LevelUp();
+						cout << aCharactor.aNowPokemons[i].aName << "'s level up!!" << endl;
+					}
+					break;
+				}
+				else if(aCharactor.aNowPokemons[i].aHp <= 0){
+					cout << "your " << aCharactor.aNowPokemons[i].aName << " is dead" << endl;
+					cout << "push any button" << endl;
+					cin >> trash;
+					a = 0;
+					for(j = 0; j < aCharactor.aPokemonCnt; j++){
+						if(aCharactor.aNowPokemons[j].aHp > 0)
+							a++;
+					}
+					if(a == 0){
+						cout << "your pokemons are all dead!!" << endl;
+						break;
+					}				
+					else {
+						cout << "Poketmon list" << endl;
+						input2 = 0;
+						while(input2 == 0){
+							for(j = 0; j < aCharactor.aNowPokemons.size(); j++){
+								cout << j+1 << ". " << aCharactor.aNowPokemons[j].aName << "\tLevel : ";
+								cout << aCharactor.aNowPokemons[j].aLevel << "\tHp : ";
+								cout << aCharactor.aNowPokemons[j].aHp << endl;
+							}
+							cin >> input2;
+							if(input2 <= aCharactor.aNowPokemons.size()){
+								if(aCharactor.aNowPokemons[input2-1].aHp > 0)
+									i = input2-1;
+								else 
+									input2 = 0;
+							}
+							else	input2 = 0;
+						}
+					}
+				}
+				else{
+					cout << "push any button" << endl;
+					cin >> trash;
+				}
+			}	
+			else if(input == 2){			// item
+				system("clear");
+				cout << "********************************************************************" << endl;
+				cout << "   1. PoketBall("<< aCharactor.aItem.aCnt[0] << ")" << endl;
+				cout << "   2. LevelCandy("<< aCharactor.aItem.aCnt[1] << ")" << endl;
+				cout << "   3. PotionLow("<< aCharactor.aItem.aCnt[2] << ")" << endl;
+				cout << "   4. PotionMid("<< aCharactor.aItem.aCnt[3] << ")" << endl;
+				cout << "   5. PotionHigh("<< aCharactor.aItem.aCnt[4] << ")" << endl;
+				cout << "   6. Exit" << endl;
+				cout << "********************************************************************" << endl;
+				cin >> input2;
+				if((input2 < 6) && (input2 > 0)){
+					if(aCharactor.aItem.aCnt[input2-1] > 0){
+						aCharactor.UsingItem(input2-1);
+						switch(input2){
+							case 1:{
+								cout << "you can't catch this pokemon!!" << endl;
+								cin >> trash;
+								
+								break;
+							}
+							case 2:{
+								aCharactor.aNowPokemons[i].LevelCandyUp();
+								cout << aCharactor.aNowPokemons[i].aName << " level up!!" << endl;
+								cout << "push any button" << endl;
+								cin >> trash;
+								break;
+							}
+							case 3:{
+								aCharactor.aNowPokemons[i].HpUp(300);
+								cout << aCharactor.aNowPokemons[i].aName << " charge 300 Hps!!" << endl; 
+								cout << "push any button" << endl;
+								cin >> trash;
+								break;
+							}
+							case 4:{
+								aCharactor.aNowPokemons[i].HpUp(600);
+								cout << aCharactor.aNowPokemons[i].aName << " charge 600 Hps!!" << endl; 
+								cout << "push any button" << endl;
+								cin >> trash;
+								break;
+							}
+							case 5:{
+								aCharactor.aNowPokemons[i].HpUp(1300);
+								cout << aCharactor.aNowPokemons[i].aName << " charge 1300 Hps!!" << endl; 
+								cout << "push any button" << endl;
+								cin >> trash;
+								break;
+							}				
+						}
+					}
+				}
+				else if(input2 == 6){
+					input2 = 0;
+					input = 0;
+				}
+			}
+			else if(input == 3){	// poketmon change
+				cout << "Poketmon list" << endl;
+				for(j = 0; j < aCharactor.aNowPokemons.size(); j++){
+					cout << j+1 << ". " << aCharactor.aNowPokemons[j].aName << "\tLevel : ";
+					cout << aCharactor.aNowPokemons[j].aLevel << "\tHp : ";
+					cout << aCharactor.aNowPokemons[j].aHp << endl;
+				}
+				cin >> input2;
+				if(input2 <= aCharactor.aNowPokemons.size()){
+					i = input2-1;
+				}
+			}
+		}
+		a = 0;
+		for(j = 0; j < aCharactor.aPokemonCnt; j++){
+			if(aCharactor.aNowPokemons[j].aHp > 0)
+				a++;
+		}
+		if(a == 0){
+			cout << "you lose!!" << endl;
+			break;
+		}
+		else{
+			cout << "push any button" << endl;
+			cin >> trash;
+		}				
+	}
+
+	if(PoketMonster.aHp <= 0){
+		trash = (aCharactor.aBadges + 1)*500;
+		aCharactor.GetMoney(trash);
+		cout << "Earn " << trash << endl;
+	}
+	cout << "\ninput any key to return the menu!" << endl;
+	cin >> input;
+
+	//InGame();
 }
 
 void Emulator::Gym(){
+	int cnt, level, huntpokenum, input = 0, input2 = 0, i = 0, j = 0, trash, a;
+	cnt = 0;
 	system("clear");
-	cout << "go to gym!!!!!!!!!!!!!!!!!!!!!!" << endl;
+	cout << "********************************************************************" << endl;
+	cout << " Gym Name : " << GymName[aCharactor.aBadges] << "\t\tPokemon_cnt : " << (aCharactor.aBadges / 2) + 2 << endl;
+	cout << "********************************************************************" << endl;
+	cout << "push any button" << endl;
+	cin >> trash;
+	cnt = 0;
+	while(cnt++ < (aCharactor.aBadges / 2) + 2){
+		if(aCharactor.aBadges < 8){
+			level = random(1,4) + (aCharactor.aBadges + 2) * 5;
+			huntpokenum = random(1, (aCharactor.aBadges + 2) * 2 + 2);
+			init_pokemon(huntpokenum, level);
+			strcpy(PoketMonster.aName, Name[huntpokenum-1]);
+		}
+		else{
+			level = 60;
+			huntpokenum = 20;
+			init_pokemon(huntpokenum, level);
+			strcpy(PoketMonster.aName, Name[huntpokenum-1]);
+		}
+	
+		while(PoketMonster.aHp > 0){
+			system("clear");
+			cout << "********************************************************************" << endl;
+			cout << "                        " << Name[huntpokenum-1] << "   level : " << level << "    Hp : " << PoketMonster.aHp << endl; 
+			cout << "\n\n" << aCharactor.aNowPokemons[i].aName << "   level : " << aCharactor.aNowPokemons[i].aLevel;
+			cout << "    Hp : " << aCharactor.aNowPokemons[i].aHp << endl;
+			cout << "********************************************************************" << endl;
+			cout << " 1. skills	  2. item	3. change" << endl;
+			cout << "********************************************************************" << endl;
+			cin >> input;
 
-	InGame();
+			if(input == 1){		// skill
+				cout << "skill list" << endl;
+				for(j = 0; j < aCharactor.aNowPokemons[i].aSkills.size(); j++){
+					cout << j+1 << ". " << Skills[aCharactor.aNowPokemons[i].aSkills[j].aNumber] << "\tcnt : ";
+					cout << aCharactor.aNowPokemons[i].aSkills[j].aCnt << endl;
+				}
+				cin >> input2;
+				system("clear");
+				fighting(i, input2, 0);
+				cout << "********************************************************************" << endl;
+				cout << "                        " << Name[huntpokenum-1] << "   level : " << level << "    Hp : " << PoketMonster.aHp << endl; 
+				cout << "\n\n" << aCharactor.aNowPokemons[i].aName << "   level : " << aCharactor.aNowPokemons[i].aLevel;
+				cout << "    Hp : " << aCharactor.aNowPokemons[i].aHp << endl;
+				cout << "********************************************************************" << endl;
+				if(PoketMonster.aHp <= 0){
+					cout << "You Win!!" << endl;
+					aCharactor.aNowPokemons[i].aExp += level;
+					
+					if(aCharactor.aNowPokemons[i].aExp > (aCharactor.aNowPokemons[i].aLevel*2)){
+						aCharactor.aNowPokemons[i].LevelUp();
+						cout << aCharactor.aNowPokemons[i].aName << "'s level up!!" << endl;
+					}
+					break;
+				}
+				else if(aCharactor.aNowPokemons[i].aHp <= 0){
+					cout << "your " << aCharactor.aNowPokemons[i].aName << " is dead" << endl;
+					cout << "push any button" << endl;
+					cin >> trash;
+					a = 0;
+					for(j = 0; j < aCharactor.aPokemonCnt; j++){
+						if(aCharactor.aNowPokemons[j].aHp > 0)
+							a++;
+					}
+					if(a == 0){
+						cout << "your pokemons are all dead!!" << endl;
+						break;
+					}				
+					else {
+						cout << "Poketmon list" << endl;
+						input2 = 0;
+						while(input2 == 0){
+							for(j = 0; j < aCharactor.aNowPokemons.size(); j++){
+								cout << j+1 << ". " << aCharactor.aNowPokemons[j].aName << "\tLevel : ";
+								cout << aCharactor.aNowPokemons[j].aLevel << "\tHp : ";
+								cout << aCharactor.aNowPokemons[j].aHp << endl;
+							}
+							cin >> input2;
+							if(input2 <= aCharactor.aNowPokemons.size()){
+								if(aCharactor.aNowPokemons[input2-1].aHp > 0)
+									i = input2-1;
+								else 
+									input2 = 0;
+							}
+							else	input2 = 0;
+						}
+					}
+				}
+				else{
+					cout << "push any button" << endl;
+					cin >> trash;
+				}
+				system("clear");
+				fighting(i, input2, 1);
+				cout << "********************************************************************" << endl;
+				cout << "                        " << Name[huntpokenum-1] << "   level : " << level << "    Hp : " << PoketMonster.aHp << endl; 
+				cout << "\n\n" << aCharactor.aNowPokemons[i].aName << "   level : " << aCharactor.aNowPokemons[i].aLevel;
+				cout << "    Hp : " << aCharactor.aNowPokemons[i].aHp << endl;
+				cout << "********************************************************************" << endl;
+				if(PoketMonster.aHp <= 0){
+					cout << "You Win!!" << endl;
+					aCharactor.aNowPokemons[i].aExp += level;
+					
+					if(aCharactor.aNowPokemons[i].aExp > (aCharactor.aNowPokemons[i].aLevel*2)){
+						aCharactor.aNowPokemons[i].LevelUp();
+						cout << aCharactor.aNowPokemons[i].aName << "'s level up!!" << endl;
+					}
+					break;
+				}
+				else if(aCharactor.aNowPokemons[i].aHp <= 0){
+					cout << "your " << aCharactor.aNowPokemons[i].aName << " is dead" << endl;
+					cout << "push any button" << endl;
+					cin >> trash;
+					a = 0;
+					for(j = 0; j < aCharactor.aPokemonCnt; j++){
+						if(aCharactor.aNowPokemons[j].aHp > 0)
+							a++;
+					}
+					if(a == 0){
+						cout << "your pokemons are all dead!!" << endl;
+						break;
+					}				
+					else {
+						cout << "Poketmon list" << endl;
+						input2 = 0;
+						while(input2 == 0){
+							for(j = 0; j < aCharactor.aNowPokemons.size(); j++){
+								cout << j+1 << ". " << aCharactor.aNowPokemons[j].aName << "\tLevel : ";
+								cout << aCharactor.aNowPokemons[j].aLevel << "\tHp : ";
+								cout << aCharactor.aNowPokemons[j].aHp << endl;
+							}
+							cin >> input2;
+							if(input2 <= aCharactor.aNowPokemons.size()){
+								if(aCharactor.aNowPokemons[input2-1].aHp > 0)
+									i = input2-1;
+								else 
+									input2 = 0;
+							}
+							else	input2 = 0;
+						}
+					}
+				}
+				else{
+					cout << "push any button" << endl;
+					cin >> trash;
+				}
+			}	
+			else if(input == 2){			// item
+				system("clear");
+				cout << "********************************************************************" << endl;
+				cout << "   1. PoketBall("<< aCharactor.aItem.aCnt[0] << ")" << endl;
+				cout << "   2. LevelCandy("<< aCharactor.aItem.aCnt[1] << ")" << endl;
+				cout << "   3. PotionLow("<< aCharactor.aItem.aCnt[2] << ")" << endl;
+				cout << "   4. PotionMid("<< aCharactor.aItem.aCnt[3] << ")" << endl;
+				cout << "   5. PotionHigh("<< aCharactor.aItem.aCnt[4] << ")" << endl;
+				cout << "   6. Exit" << endl;
+				cout << "********************************************************************" << endl;
+				cin >> input2;
+				if((input2 < 6) && (input2 > 0)){
+					if(aCharactor.aItem.aCnt[input2-1] > 0){
+						aCharactor.UsingItem(input2-1);
+						switch(input2){
+							case 1:{
+								cout << "you can't catch this pokemon!!" << endl;
+								cin >> trash;
+								
+								break;
+							}
+							case 2:{
+								aCharactor.aNowPokemons[i].LevelCandyUp();
+								cout << aCharactor.aNowPokemons[i].aName << " level up!!" << endl;
+								cout << "push any button" << endl;
+								cin >> trash;
+								break;
+							}
+							case 3:{
+								aCharactor.aNowPokemons[i].HpUp(300);
+								cout << aCharactor.aNowPokemons[i].aName << " charge 300 Hps!!" << endl; 
+								cout << "push any button" << endl;
+								cin >> trash;
+								break;
+							}
+							case 4:{
+								aCharactor.aNowPokemons[i].HpUp(600);
+								cout << aCharactor.aNowPokemons[i].aName << " charge 600 Hps!!" << endl; 
+								cout << "push any button" << endl;
+								cin >> trash;
+								break;
+							}
+							case 5:{
+								aCharactor.aNowPokemons[i].HpUp(1300);
+								cout << aCharactor.aNowPokemons[i].aName << " charge 1300 Hps!!" << endl; 
+								cout << "push any button" << endl;
+								cin >> trash;
+								break;
+							}				
+						}
+					}
+				}
+				else if(input2 == 6){
+					input2 = 0;
+					input = 0;
+				}
+			}
+			else if(input == 3){	// poketmon change
+				cout << "Poketmon list" << endl;
+				for(j = 0; j < aCharactor.aNowPokemons.size(); j++){
+					cout << j+1 << ". " << aCharactor.aNowPokemons[j].aName << "\tLevel : ";
+					cout << aCharactor.aNowPokemons[j].aLevel << "\tHp : ";
+					cout << aCharactor.aNowPokemons[j].aHp << endl;
+				}
+				cin >> input2;
+				if(input2 <= aCharactor.aNowPokemons.size()){
+					i = input2-1;
+				}
+			}
+		}
+		a = 0;
+		for(j = 0; j < aCharactor.aPokemonCnt; j++){
+			if(aCharactor.aNowPokemons[j].aHp > 0)
+				a++;
+		}
+		if(a == 0){
+			cout << "you lose!!" << endl;
+			break;
+		}	
+		else{
+			cout << "push any button" << endl;
+			cin >> trash;
+		}			
+	}
+	if(PoketMonster.aHp <= 0){
+		trash = (aCharactor.aBadges + 1)*1000;
+		aCharactor.GetMoney(trash);
+		if(aCharactor.aBadges < 8)
+			aCharactor.GetBadge();
+		cout << "Earn " << trash << endl;
+	}
+	cout << "\ninput any key to return the menu!" << endl;
+	cin >> input;
+
+	//InGame();
 }
 
 void Emulator::Exit(){
@@ -634,23 +1304,35 @@ void Emulator::fighting(int i, int input2, bool b){
 		skilltype = SkillType[skillnum];
 		switch(skilltype){
 			case NORMAL:{
-				attack = aCharactor.aNowPokemons[i].aAttk * SkillPercent[skillnum] / 40;
-				cout << Skills[skillnum] << "\t";
-				if(PoketMonster.aAttribute == ELECTRIC){
-					cout << "It was very powerful!!" << endl;
-					attack = attack * 2;
-				}
-				else if(PoketMonster.aAttribute == LEGEND){
-					cout << "It was weak!!" << endl;
-					attack = attack / 2;
+				if(skillnum == 17){		// Self Bomb
+					attack = aCharactor.aNowPokemons[i].aAttk * SkillPercent[skillnum] / 40;;
+					cout << Skills[skillnum] << "\t";
+					cout << "Self Bomb!!" << endl;
+					attack -= (PoketMonster.aDef/5);
+					if(attack <= 0)	attack = 1;
+					PoketMonster.aHp -= attack;
+					if(PoketMonster.aHp < 0) PoketMonster.aHp = 0;
+					aCharactor.aNowPokemons[i].aHp = 0;
 				}
 				else{
-					cout << "It was normal damage!!" << endl;
+					attack = aCharactor.aNowPokemons[i].aAttk * SkillPercent[skillnum] / 40;
+					cout << Skills[skillnum] << "\t";
+					if(PoketMonster.aAttribute == ELECTRIC){
+						cout << "It was very powerful!!" << endl;
+						attack = attack * 2;
+					}
+					else if(PoketMonster.aAttribute == LEGEND){
+						cout << "It was weak!!" << endl;
+						attack = attack / 2;
+					}
+					else{
+						cout << "It was normal damage!!" << endl;
+					}
+					attack -= (PoketMonster.aDef/3);
+					if(attack <= 0)	attack = 1;
+					PoketMonster.aHp -= attack;
+					if(PoketMonster.aHp < 0) PoketMonster.aHp = 0;
 				}
-				attack -= (PoketMonster.aDef/3);
-				if(attack <= 0)	attack = 1;
-				PoketMonster.aHp -= attack;
-				if(PoketMonster.aHp < 0) PoketMonster.aHp = 0;
 				break;				
 			}
 			case ELECTRIC:{
@@ -812,23 +1494,35 @@ void Emulator::fighting(int i, int input2, bool b){
 		
 		switch(skilltype){
 			case NORMAL:{
-				attack = PoketMonster.aAttk * SkillPercent[skillnum] / 40;
-				cout << Skills[skillnum] << "\t";
-				if(aCharactor.aNowPokemons[i].aAttribute == ELECTRIC){
-					cout << "It was very powerful!!" << endl;
-					attack = attack * 2;
-				}
-				else if(aCharactor.aNowPokemons[i].aAttribute == LEGEND){
-					cout << "It was weak!!" << endl;
-					attack = attack / 2;
+				if(skillnum == 17){		// Self Bomb
+					attack = PoketMonster.aAttk * SkillPercent[skillnum] / 40;;
+					cout << Skills[skillnum] << "\t";
+					cout << "Self Bomb!!" << endl;
+					attack -= (aCharactor.aNowPokemons[i].aDef/5);
+					if(attack <= 0)	attack = 1;
+					aCharactor.aNowPokemons[i].aHp -= attack;
+					if(aCharactor.aNowPokemons[i].aHp < 0) aCharactor.aNowPokemons[i].aHp = 0;
+					PoketMonster.aHp = 0;
 				}
 				else{
-					cout << "It was normal damage!!" << endl;
+					attack = PoketMonster.aAttk * SkillPercent[skillnum] / 40;
+					cout << Skills[skillnum] << "\t";
+					if(aCharactor.aNowPokemons[i].aAttribute == ELECTRIC){
+						cout << "It was very powerful!!" << endl;
+						attack = attack * 2;
+					}
+					else if(aCharactor.aNowPokemons[i].aAttribute == LEGEND){
+						cout << "It was weak!!" << endl;
+						attack = attack / 2;
+					}
+					else{
+						cout << "It was normal damage!!" << endl;
+					}
+					attack -= (aCharactor.aNowPokemons[i].aDef/3);
+					if(attack <= 0)	attack = 1;
+					aCharactor.aNowPokemons[i].aHp -= attack;
+					if(aCharactor.aNowPokemons[i].aHp < 0) aCharactor.aNowPokemons[i].aHp = 0;
 				}
-				attack -= (aCharactor.aNowPokemons[i].aDef/3);
-				if(attack <= 0)	attack = 1;
-				aCharactor.aNowPokemons[i].aHp -= attack;
-				if(aCharactor.aNowPokemons[i].aHp < 0) aCharactor.aNowPokemons[i].aHp = 0;
 				break;				
 			}
 			case ELECTRIC:{
@@ -1085,8 +1779,18 @@ void init_pokemon(int i, int level){
 
 int random(int low, int high){
 	float temp;
-	long zi;
-	zi = (ran * MULT)%MODLUS;
+	long zi, lowprd, hi31;
+	zi = ran;
+	lowprd = (zi & 65535) * MULT1;
+	hi31   = (zi >> 16) * MULT1 + (lowprd >> 16);
+	zi     = ((lowprd & 65535) - MODLUS) +
+	     ((hi31 & 32767) << 16) + (hi31 >> 15);
+	if (zi < 0) zi += MODLUS;
+	lowprd = (zi & 65535) * MULT2;
+	hi31   = (zi >> 16) * MULT2 + (lowprd >> 16);
+	zi     = ((lowprd & 65535) - MODLUS) +
+	     ((hi31 & 32767) << 16) + (hi31 >> 15);
+	if (zi < 0) zi += MODLUS;
 	ran = zi;
 	temp = (zi >> 7 | 1) / 16777216.0;
 	return (int)(low + (high - low + 1) * temp);
